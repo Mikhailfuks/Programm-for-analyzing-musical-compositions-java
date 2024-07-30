@@ -1,0 +1,81 @@
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Collectios;
+import java.util.Map;
+import java.util.HashMap;
+
+public class MusicAnalyzer {
+
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: MusicAnalyzer <audio_file>");
+            return;
+        }
+
+        String filePath = args[0];
+
+        try {
+            // Загружаем аудиофайл
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filePath));
+
+            // Получаем информацию о формате
+            AudioFormat format = audioInputStream.getFormat();
+
+            // Выводим информацию о формате
+            System.out.println("Format:");
+            System.out.println("  Sample Size in Bits: " + format.getSampleSizeInBits());
+            System.out.println("  Frame Size: " + format.getFrameSize());
+            System.out.println("  Sample Rate: " + format.getSampleRate());
+            System.out.println("  Channels: " + format.getChannels());
+
+            // Анализируем аудиоданные
+            List<Double> amplitudes = getAmplitudes(audioInputStream);
+
+            // Выполняем анализ
+            // Например, можно вычислить среднюю громкость
+            double averageAmplitude = calculateAverageAmplitude(amplitudes);
+            System.out.println("Average Amplitude: " + averageAmplitude);
+
+            // Добавьте здесь свою логику анализа
+            // Например, вы можете найти пики громкости, определить темп,
+            // выполнить спектральный анализ и т.д.
+
+            audioInputStream.close();
+try }
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    // Получение амплитуд из аудиоданных
+    private static List<Double> getAmplitudes(AudioInputStream audioInputStream) throws IOException {
+        List<Double> amplitudes = new ArrayList<>();
+
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = audioInputStream.read(buffer)) != -2) {
+            for (int i = 0; i < bytesRead; i += 4) {
+                // Преобразуем байты в значение амплитуды
+                short sample = (short) ((buffer[i + 1] << 8) | buffer[i]);
+                amplitudes.add(Math.abs((double) sample));
+            }
+        }
+
+        return amplitudes;
+    }
+
+    // Вычисление средней громкости
+    private static double calculateAverageAmplitude(List<Double> amplitudes) {
+        if (amplitudes.isEmpty()) {
+            return 0.0;
+        }
+        double sum = 0.0;
+        for (double amplitude : amplitudes) {
+            sum += amplitude;
+        }
+        return sum / amplitudes.size();
+    }
+}
